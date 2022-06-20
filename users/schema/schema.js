@@ -5,6 +5,7 @@ const { GraphQLObjectType, GraphQLInt, GraphQLString } = graphql;
 const users = [
   { id: "14", firstName: "Danny", age: 21, companyid: "1" },
   { id: "47", firstName: "Aman", age: 20, companyid: "2" },
+  { id: "48", firstName: "Aman", age: 20, companyid: "2" },
 ];
 
 const companies = [
@@ -18,11 +19,18 @@ const companies = [
 
 const CompanyType = new GraphQLObjectType({
   name: "Company",
-  fields: {
+  fields: () => ({
     id: { type: GraphQLString },
     name: { type: GraphQLString },
     description: { type: GraphQLString },
-  },
+    users: {
+      type: new graphql.GraphQLList(UserType),
+      resolve(parentValue, args) {
+        console.log(parentValue);
+        return users.filter((usr) => usr.companyid == parentValue.id);
+      },
+    },
+  }),
 });
 
 const UserType = new GraphQLObjectType({
@@ -53,6 +61,15 @@ const RootQuery = new GraphQLObjectType({
       },
       resolve(parentValue, args) {
         return _.find(users, { id: args.id });
+      },
+    },
+    company: {
+      type: CompanyType,
+      args: {
+        id: { type: GraphQLString },
+      },
+      resolve(parentValue, args) {
+        return _.find(companies, { id: args.id });
       },
     },
   },
